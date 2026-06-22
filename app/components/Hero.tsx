@@ -28,6 +28,7 @@ export default function Hero() {
         gsap.set(
           [
             ".pal-brand",
+            ".pal-cta",
             ".pal-overline",
             ".pal-tagline",
             ".pal-right-vert",
@@ -42,6 +43,7 @@ export default function Hero() {
       // ---- initial hidden states ----
       gsap.set(".pal-char", { yPercent: 130 });
       gsap.set(".pal-brand", { y: -18, opacity: 0 });
+      gsap.set(".pal-cta", { y: -18, opacity: 0 });
       gsap.set(".pal-overline", { x: -24, opacity: 0 });
       gsap.set(".pal-tagline", { y: 20, opacity: 0 });
       gsap.set(".pal-right-vert", { x: 24, opacity: 0 });
@@ -51,6 +53,7 @@ export default function Hero() {
       // ---- intro timeline ----
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
       tl.to(".pal-brand", { y: 0, opacity: 1, duration: 0.9 }, 0.1)
+        .to(".pal-cta", { y: 0, opacity: 1, duration: 0.9 }, 0.2)
         .to(
           ".pal-char",
           { yPercent: 0, duration: 1.25, stagger: 0.09, ease: "expo.out" },
@@ -123,39 +126,48 @@ export default function Hero() {
             <span style={{ display: "block", width: 38, height: 3, background: INK }} />
           </button>
 
-          <a
-            href="#"
-            aria-label="PAL General Engineering Inc."
+
+        </div>
+
+        {/* ===== TOP-RIGHT: availability + contact CTA ===== */}
+        <div
+          className="pal-topright pal-cta"
+          style={{
+            position: "absolute",
+            top: 34,
+            right: 48,
+            display: "flex",
+            alignItems: "center",
+            gap: 18,
+            zIndex: 6,
+            pointerEvents: "auto",
+          }}
+        >
+          <span
             style={{
               display: "inline-flex",
-              flexDirection: "column",
-              lineHeight: 1,
-              textDecoration: "none",
-              color: INK,
+              alignItems: "center",
+              gap: 9,
+              fontFamily: MONO,
+              fontSize: 16,
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: "rgba(22,24,28,0.55)",
             }}
           >
             <span
+              className="pal-cta-dot"
               style={{
-                fontSize: 26,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
+                display: "inline-block",
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: ACCENT,
+                animation: "pal-cta-pulse 2.4s ease-in-out infinite",
               }}
-            >
-              PAL
-            </span>
-            <span
-              style={{
-                fontFamily: MONO,
-                fontSize: 10,
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: "rgba(22,24,28,0.55)",
-                marginTop: 6,
-              }}
-            >
-              General&nbsp;Engineering&nbsp;Inc.
-            </span>
-          </a>
+            />
+            Available for new projects
+          </span>
         </div>
 
         {/* ===== RIGHT EDGE: vertical services ===== */}
@@ -168,7 +180,7 @@ export default function Hero() {
             transform: "translateY(-50%)",
             writingMode: "vertical-rl",
             fontFamily: MONO,
-            fontSize: 11,
+            fontSize: 13,
             letterSpacing: "0.32em",
             textTransform: "uppercase",
             color: "rgba(22,24,28,0.55)",
@@ -183,7 +195,7 @@ export default function Hero() {
           className="pal-hero-block"
           style={{
             position: "absolute",
-            left: 48,
+            left: 88,
             top: "50%",
             transform: "translateY(-50%)",
             maxWidth: "62vw",
@@ -216,7 +228,7 @@ export default function Hero() {
               margin: 0,
               fontWeight: 400,
               lineHeight: 0.82,
-              fontSize: "clamp(96px, 16vw, 234px)",
+              fontSize: "clamp(96px, 16vw, 204px)",
               display: "flex",
               
             }}
@@ -250,7 +262,7 @@ export default function Hero() {
               margin: "2px 0 0 0",
               maxWidth: 640,
               fontFamily: "var(--font-geist-sans), 'Helvetica Neue', Arial, sans-serif",
-              fontSize: "clamp(18px, 1.8vw, 26px)",
+              fontSize: "clamp(18px, 1.8vw, 22px)",
               lineHeight: 1.25,
               letterSpacing: "-0.01em",
               color: "rgba(22,24,28,0.82)",
@@ -269,7 +281,7 @@ export default function Hero() {
             left: 48,
             bottom: 46,
             fontFamily: MONO,
-            fontSize: 11,
+            fontSize: 16,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             lineHeight: 1.7,
@@ -295,7 +307,7 @@ export default function Hero() {
             alignItems: "center",
             gap: 12,
             fontFamily: MONO,
-            fontSize: 11,
+            fontSize: 18,
             letterSpacing: "0.2em",
             textTransform: "uppercase",
             color: "rgba(22,24,28,0.6)",
@@ -307,8 +319,8 @@ export default function Hero() {
             className="pal-scroll-line"
             style={{
               display: "inline-block",
-              width: 46,
-              height: 1,
+              width: 186,
+              height: 5,
               background: "rgba(22,24,28,0.5)",
               position: "relative",
               overflow: "hidden",

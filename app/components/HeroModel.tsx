@@ -16,7 +16,7 @@ const MODEL_SCALE = 1; // overall size multiplier
 // ─── Truck transform (move / turn / resize the truck) ────────────────────────
 // Values are relative to the scene: the truck sits in a wrapper group that
 // shares MODEL_* below, so it rides with the street and these stay tweakable.
-const TRUCK_POSITION: [number, number, number] = [-5, 0.55, 0]; // slide the truck [x, y, z]
+const TRUCK_POSITION: [number, number, number] = [-3, 0.55, 0]; // slide the truck [x, y, z]
 const TRUCK_ROTATION: [number, number, number] = [0, 3.16, 0]; // turn the truck in radians [x, y, z]
 const TRUCK_SCALE = 1; // overall size multiplier
 
@@ -41,16 +41,16 @@ const SIGNS: SignConfig[] = [
 ];
 
 // ─── Full camera controller (edit everything here) ───────────────────────────
-const FOCUS: [number, number, number] = [-2, 3.8, 1]; // point the camera orbits / looks at
-const CAMERA: [number, number, number] = [2.8, 12, 12]; // starting camera position [x, y, z]
-const FOV = 56; // lens field of view — lower = more zoomed in / flatter
+const FOCUS: [number, number, number] = [-1, 5.8, -5]; // point the camera orbits / looks at
+const CAMERA: [number, number, number] = [9.8, 6, 14]; // starting camera position [x, y, z]
+const FOV = 65; // lens field of view — lower = more zoomed in / flatter
 
 // ─── Distance fog (far end of the street fades into white, clears up close) ──
 // Measured as distance FROM THE CAMERA, so it covers whatever is far away and
 // melts off as you dolly / orbit closer — exactly the "approach to reveal" look.
-const FOG_COLOR = "#ffffff"; // pure white. Use the page paper "#e9e8e3" to blend seamlessly into the background.
-const FOG_NEAR = 16; // closer than this = crystal clear (the truck / foreground stay sharp)
-const FOG_FAR = 42; // at/beyond this = fully white (the far buildings vanish)
+const FOG_COLOR = "#E4E4E4"; // pure white. Use the page paper "#e9e8e3" to blend seamlessly into the background.
+const FOG_NEAR = 25; // closer than this = crystal clear (the truck / foreground stay sharp)
+const FOG_FAR = 90; // at/beyond this = fully white (the far buildings vanish)
 
 const CONTROLS = {
   // What the user can do

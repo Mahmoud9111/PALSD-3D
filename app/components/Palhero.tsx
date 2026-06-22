@@ -68,7 +68,7 @@ const ROOM_ROUGHNESS = 0.95; // 1 = fully matte; lower adds a faint sheen
 // A flat plane laid on the ground, painted by a shader with light-grey square
 // borders and a blue fill on the cell under the cursor — the 3D equivalent of
 // <ShapeGrid squareSize=45 borderColor="#e3e3e3" hoverFillColor="#3B82F6" />.
-const GRID_SQUARE_SIZE = 0.5; // world units per cell (≈ ShapeGrid squareSize)
+const GRID_SQUARE_SIZE = 0.7; // world units per cell (≈ ShapeGrid squareSize)
 const GRID_BORDER_COLOR = "#C7C7C7"; // square OUTLINE colour (the grid lines)
 const GRID_FILL_COLOR = "#E4E4E4"; // square INTERIOR colour, BEFORE hover — change this
 const GRID_FILL_OPACITY = 0.71; // resting fill strength (0 = fully transparent squares)
