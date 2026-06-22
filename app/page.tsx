@@ -1,5 +1,5 @@
-import Hero from "./components/Hero";
+import Animate from "./components/animate";
 
 export default function Home() {
-  return <Hero />;
+  return <Animate />;
 }

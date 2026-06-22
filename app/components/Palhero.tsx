@@ -46,13 +46,18 @@ type GLTFResult = GLTF & {
 
 // Street transform — shared by the road mesh and the lane-marking geometry so
 // the white lines line up exactly on top of the road.
-const STREET_POSITION: [number, number, number] = [-55.439, 0.08, 0];
-const STREET_SCALE: [number, number, number] = [68.37, 1.8, 3.62];
+// X scale = how LONG the road is. The mesh's local X extent is 1.906066, so the
+// road's world length = STREET_SCALE.x * 1.906066. Here it's stretched to fill the
+// WHOLE ground end-to-end (≈ 335 units, world X ∈ [-217, +118]) and re-centred on
+// the ground's centre (X = -49.449) so both ends reach the ground edges. The
+// Bridge's DECK_LENGTH + X are kept matched to this — see Bridge.tsx / animate.tsx.
+const STREET_POSITION: [number, number, number] = [-49.449, 0.08, 0];
+const STREET_SCALE: [number, number, number] = [527.436, 1.8, 3.62]; // X (length) = 3× the original 175.812
 
 // Ground transform — shared by the ground mesh and the grid overlay so the grid
 // is measured and placed against the ground's real surface.
 const GROUND_POSITION: [number, number, number] = [-49.794, 0, 0];
-const GROUND_SCALE: [number, number, number] = [176.174, 0.1, 149.787];
+const GROUND_SCALE: [number, number, number] = [528.522, 0.1, 149.787]; // X (length) = 3× the original 176.174
 
 // ─── Room enclosure (4 walls + a ceiling wrapped around the ground) ───────────
 // Built from the ground's measured extent (see buildGround), so the four walls
@@ -219,7 +224,7 @@ function createStreetTextures() {
   roadMap.colorSpace = THREE.SRGBColorSpace;
   roadMap.wrapS = THREE.RepeatWrapping;
   roadMap.wrapT = THREE.RepeatWrapping;
-  roadMap.repeat.set(14, 1);
+  roadMap.repeat.set(36, 1);
   roadMap.anisotropy = 8;
 
   // ── 4-step toon gradient → crisp cel-shaded banding instead of smooth shading ─
@@ -263,7 +268,7 @@ function buildStreetLines(geometry: THREE.BufferGeometry) {
   const centerZ = (minZ + maxZ) / 2;
 
   // dashed centre line — evenly spaced dash centres along the road
-  const dashCount = 50; // more dashes → closer together
+  const dashCount = 390; // more dashes → closer together (scaled with the 3× longer road)
   const span = lengthX * 0.96;
   const step = span / dashCount;
   const dashes: number[] = [];

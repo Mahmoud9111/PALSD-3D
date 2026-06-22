@@ -90,7 +90,7 @@ export default function Hero() {
       {/* Text overlay — pointer-events pass through to the canvas except on links */}
       <div
         className="absolute inset-0 z-10"
-        style={{ padding: "34px 48px 64px 48px", pointerEvents: "none" }}
+        style={{ padding: "56px 80px 72px 80px", pointerEvents: "none" }}
       >
         {/* ===== TOP-LEFT: burger + brand mark ===== */}
         <div
@@ -134,8 +134,8 @@ export default function Hero() {
           className="pal-topright pal-cta"
           style={{
             position: "absolute",
-            top: 34,
-            right: 48,
+            top: 56,
+            right: 80,
             display: "flex",
             alignItems: "center",
             gap: 18,
@@ -175,7 +175,7 @@ export default function Hero() {
           className="pal-right-vert"
           style={{
             position: "absolute",
-            right: 22,
+            right: 40,
             top: "50%",
             transform: "translateY(-50%)",
             writingMode: "vertical-rl",
@@ -190,15 +190,16 @@ export default function Hero() {
           Civil&nbsp;—&nbsp;Structural&nbsp;—&nbsp;Infrastructure&nbsp;—&nbsp;Earthworks
         </div>
 
-        {/* ===== HERO BLOCK (left-anchored logotype) ===== */}
+        {/* ===== HERO BLOCK (top-center logotype) ===== */}
         <div
           className="pal-hero-block"
           style={{
             position: "absolute",
-            left: 88,
-            top: "50%",
-            transform: "translateY(-50%)",
-            maxWidth: "62vw",
+            left: "50%",
+            top: 104,
+            transform: "translateX(-50%)",
+            maxWidth: "92vw",
+            textAlign: "center",
             zIndex: 4,
           }}
         >
@@ -210,9 +211,10 @@ export default function Hero() {
               letterSpacing: "0.26em",
               textTransform: "uppercase",
               color: "rgba(22,24,28,0.6)",
-              marginBottom: 26,
+              marginBottom: 22,
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: 14,
             }}
           >
@@ -220,6 +222,9 @@ export default function Hero() {
               style={{ display: "inline-block", width: 34, height: 1, background: ACCENT }}
             />
             Engineering &amp; Construction — Est. 1998
+            <span
+              style={{ display: "inline-block", width: 34, height: 1, background: ACCENT }}
+            />
           </div>
 
           <h1
@@ -228,9 +233,9 @@ export default function Hero() {
               margin: 0,
               fontWeight: 400,
               lineHeight: 0.82,
-              fontSize: "clamp(96px, 16vw, 204px)",
+              fontSize: "clamp(80px, 13vw, 176px)",
               display: "flex",
-              
+              justifyContent: "center",
             }}
           >
             {["P", "A", "L", "S","D"].map((c) => (
@@ -240,13 +245,12 @@ export default function Hero() {
                 style={{
                   display: "inline-block",
                   overflow: "hidden",
-                  // top/right/bottom room so glyph ink (P bowl, A apex) isn't clipped;
-                  // no left pad keeps "P" aligned to the 48px edge.
-                  padding: "0.06em 0.05em 0.08em 0",
+                  // even top/side/bottom room so glyph ink (P bowl, A apex) isn't clipped.
+                  padding: "0.06em 0.05em 0.08em 0.05em",
                   // tighten letters via margin instead of letter-spacing, which would
                   // narrow the overflow box and clip the glyphs again.
-                  marginRight: "-0.05em",
-
+                  marginLeft: "-0.025em",
+                  marginRight: "-0.025em",
                 }}
               >
                 <span className="pal-char" style={{ display: "inline-block" }}>
@@ -259,17 +263,18 @@ export default function Hero() {
           <p
             className="pal-tagline"
             style={{
-              margin: "2px 0 0 0",
-              maxWidth: 640,
+              margin: "10px auto 0 auto",
+              maxWidth: 620,
               fontFamily: "var(--font-geist-sans), 'Helvetica Neue', Arial, sans-serif",
               fontSize: "clamp(18px, 1.8vw, 22px)",
-              lineHeight: 1.25,
+              lineHeight: 1.3,
               letterSpacing: "-0.01em",
+              textAlign: "center",
               color: "rgba(22,24,28,0.82)",
             }}
           >
-            We build the infrastructure the world runs on — bridges, highways, and the
-            structures that hold it all up.
+            We build the infrastructure the world runs on — bridges, highways, and
+            the structures that hold it all up.
           </p>
         </div>
 
@@ -278,8 +283,8 @@ export default function Hero() {
           className="pal-bottomleft"
           style={{
             position: "absolute",
-            left: 48,
-            bottom: 46,
+            left: 80,
+            bottom: 64,
             fontFamily: MONO,
             fontSize: 16,
             letterSpacing: "0.14em",
@@ -287,12 +292,13 @@ export default function Hero() {
             lineHeight: 1.7,
             color: "rgba(22,24,28,0.6)",
             zIndex: 5,
+            maxWidth: "11vw",
           }}
         >
-          Denver, Colorado
+          9939 Hibert St. Ste 201, San Diego, CA 92131
           <br />
           <span style={{ color: "rgba(22,24,28,0.4)" }}>
-            39.7392° N&nbsp;&nbsp;104.9903° W
+            32.9085° N&nbsp;&nbsp;117.1095° W
           </span>
         </div>
 
@@ -301,8 +307,8 @@ export default function Hero() {
           className="pal-scroll"
           style={{
             position: "absolute",
-            right: 48,
-            bottom: 46,
+            right: 80,
+            bottom: 64,
             display: "flex",
             alignItems: "center",
             gap: 12,

@@ -76,9 +76,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* No CSS `scroll-behavior: smooth` — it fights JS smooth scrolling
+   (ScrollSmoother) and makes programmatic scrolls feel laggy. */
 
 body {
   background: var(--background);

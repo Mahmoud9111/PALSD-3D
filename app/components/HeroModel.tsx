@@ -2,11 +2,17 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, Lightformer } from "@react-three/drei";
+import {
+  OrbitControls,
+  Environment,
+  Lightformer,
+  Sky,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { Model } from "./Palhero";
 import { TruckV2 } from "./TruckV2";
 import { Sign } from "./Sign";
+import { Bridge } from "./Bridge";
 
 // ─── Model transform (move / turn / resize the whole scene) ──────────────────
 const MODEL_POSITION: [number, number, number] = [7, 0, 0]; // slide the model [x, y, z]
@@ -16,7 +22,7 @@ const MODEL_SCALE = 1; // overall size multiplier
 // ─── Truck transform (move / turn / resize the truck) ────────────────────────
 // Values are relative to the scene: the truck sits in a wrapper group that
 // shares MODEL_* below, so it rides with the street and these stay tweakable.
-const TRUCK_POSITION: [number, number, number] = [-3, 0.55, 0]; // slide the truck [x, y, z]
+const TRUCK_POSITION: [number, number, number] = [-4, 0.55, 0]; // slide the truck [x, y, z]
 const TRUCK_ROTATION: [number, number, number] = [0, 3.16, 0]; // turn the truck in radians [x, y, z]
 const TRUCK_SCALE = 1; // overall size multiplier
 
@@ -40,17 +46,38 @@ const SIGNS: SignConfig[] = [
   { position: [-85.041, 0.435, -3.929], rotation: [0, 0, 0], scale: 1.3 }, // between buildings 3 & 4
 ];
 
+// ─── Bridge (elevated viaduct, set back BEHIND the row of houses) ─────────────
+// The houses sit at z = -20.257; pushing the bridge further back to z = -48
+// leaves a clear strip of ground between them and the viaduct — the same gap as
+// the reference image. Centred on X = -55 so it runs the length of the row.
+// Rides in the shared MODEL_* wrapper below, so it stays locked to the scene.
+const BRIDGE_POSITION: [number, number, number] = [-49.449, 0, -48]; // [x, y, z] — X centred on the road (= ground centre) so both run end-to-end at equal length; push z more negative to sit further back
+const BRIDGE_ROTATION: [number, number, number] = [0, 0, 0]; // turn in radians [x, y, z]
+const BRIDGE_SCALE = 1; // overall size multiplier
+
 // ─── Full camera controller (edit everything here) ───────────────────────────
 const FOCUS: [number, number, number] = [-1, 5.8, -5]; // point the camera orbits / looks at
-const CAMERA: [number, number, number] = [9.8, 6, 14]; // starting camera position [x, y, z]
+const CAMERA: [number, number, number] = [9.8, 7, 14]; // starting camera position [x, y, z]
 const FOV = 65; // lens field of view — lower = more zoomed in / flatter
 
 // ─── Distance fog (far end of the street fades into white, clears up close) ──
 // Measured as distance FROM THE CAMERA, so it covers whatever is far away and
 // melts off as you dolly / orbit closer — exactly the "approach to reveal" look.
-const FOG_COLOR = "#E4E4E4"; // pure white. Use the page paper "#e9e8e3" to blend seamlessly into the background.
-const FOG_NEAR = 25; // closer than this = crystal clear (the truck / foreground stay sharp)
-const FOG_FAR = 90; // at/beyond this = fully white (the far buildings vanish)
+const FOG_COLOR = "#E4E4E4"; // pale sky-blue haze so the far street melts into the horizon (was "#E4E4E4" grey for the paper background).
+const FOG_NEAR = 10; // closer than this = crystal clear (the truck / foreground stay sharp)
+const FOG_FAR = 85; // at/beyond this = fully hazed into the sky (the far buildings vanish)
+
+// ─── Sky dome (Preetham atmospheric scattering) ──────────────────────────────
+// The sky shader ignores scene fog, so it stays vivid while the street still
+// hazes into FOG_COLOR at the horizon. Keep the sun DIRECTION aligned with the
+// key light (see directionalLight at [16,16,9]) so the sky glow, the shadows and
+// the lit faces all agree. Higher sun = paler, softer sky (kinder to the dark
+// text overlay); higher rayleigh = deeper blue; higher turbidity = hazier.
+const SKY_SUN: [number, number, number] = [16, 22, 9]; // sun direction (magnitude ignored — it's normalised)
+const SKY_TURBIDITY = 6;
+const SKY_RAYLEIGH = 1.4;
+const SKY_MIE_COEFFICIENT = 0.006;
+const SKY_MIE_G = 0.85;
 
 const CONTROLS = {
   // What the user can do
@@ -105,8 +132,18 @@ export default function HeroModel() {
       className="!absolute inset-0"
     >
       {/* Distance fog — camera-relative, so the far end of the street fades
-          into white and clears as you dolly / orbit closer. */}
+          into the sky haze and clears as you dolly / orbit closer. */}
       <fog attach="fog" args={[FOG_COLOR, FOG_NEAR, FOG_FAR]} />
+
+      {/* Atmospheric sky dome — see SKY_* above. Renders behind everything and
+          ignores the fog, so it stays vivid while the street hazes off. */}
+      <Sky
+        sunPosition={SKY_SUN}
+        turbidity={SKY_TURBIDITY}
+        rayleigh={SKY_RAYLEIGH}
+        mieCoefficient={SKY_MIE_COEFFICIENT}
+        mieDirectionalG={SKY_MIE_G}
+      />
 
       {/* --- Lights: clean neutral-daylight "low-poly city" rig ---
           Matches the reference render: pure white sun, soft grey shadows, very
@@ -223,6 +260,13 @@ export default function HeroModel() {
               scale={s.scale}
             />
           ))}
+          {/* Bridge — elevated viaduct set back behind the houses (see BRIDGE_*
+              above). Rides in this wrapper so it stays locked to the street. */}
+          <Bridge
+            position={BRIDGE_POSITION}
+            rotation={BRIDGE_ROTATION}
+            scale={BRIDGE_SCALE}
+          />
         </group>
       </Suspense>
 
