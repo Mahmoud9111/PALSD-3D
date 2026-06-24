@@ -63,7 +63,7 @@ const FOV = 65; // lens field of view — lower = more zoomed in / flatter
 // ─── Distance fog (far end of the street fades into white, clears up close) ──
 // Measured as distance FROM THE CAMERA, so it covers whatever is far away and
 // melts off as you dolly / orbit closer — exactly the "approach to reveal" look.
-const FOG_COLOR = "#E4E4E4"; // pale sky-blue haze so the far street melts into the horizon (was "#E4E4E4" grey for the paper background).
+const FOG_COLOR = "#F0F0F0"; // pale sky-blue haze so the far street melts into the horizon (was "#E4E4E4" grey for the paper background).
 const FOG_NEAR = 10; // closer than this = crystal clear (the truck / foreground stay sharp)
 const FOG_FAR = 85; // at/beyond this = fully hazed into the sky (the far buildings vanish)
 

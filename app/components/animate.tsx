@@ -16,20 +16,20 @@ progress value; a per-frame rig reads it and places the truck + camera, while th
 text overlay's opacity is faded from the same progress so everything stays in sync.
 */
 
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, Sky } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { useGSAP } from "@gsap/react";
 import { Model } from "./Palhero";
 import { TruckV2 } from "./TruckV2";
 import { Sign } from "./Sign";
 import { Bridge } from "./Bridge";
 
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+// NOTE: ScrollSmoother + the master scroll ScrollTrigger are created in page.tsx
+// (the parent owns the smooth-scroll DOM + Section 2 as siblings), so the plugins
+// are registered there. This file only uses gsap + useGSAP for the hero intro.
 
 // ─── Palette (from the PAL reference design) ─────────────────────────────────
 const INK = "#16181C";
@@ -57,8 +57,8 @@ const TRUCK_END_X = -514; // just shy of the far structures
 
 
 const TRUCK_DRIVE: { dist: number; speed: number; note: string }[] = [
-  { dist: 6, speed: 1, note: "STAGE 1 — launch: eases off the line from a dead stop (LAUNCH_EASE)" },
-  { dist: 34, speed: 5, note: "STAGE 2 — quick cruise: already moving, not crawling" },
+  { dist: 4, speed: 1, note: "STAGE 1 — launch: eases off the line from a dead stop (LAUNCH_EASE)" },
+  { dist: 20, speed: 5, note: "STAGE 2 — quick cruise: already moving, not crawling" },
   // stage 3 ramps smoothly off stage 2 into light speed, then stays flat-out
   { dist: 44, speed: 26, note: "STAGE 3" },
   { dist: 48, speed: 34, note: "STAGE 4" },
@@ -88,7 +88,7 @@ const TRUCK_PATH: [number, number][] = buildTruckPath();
 
 // ── THE LAUNCH KNOB ──────────────────────────────────────────────────────────
 
-const LAUNCH_EASE = 1;
+const LAUNCH_EASE = 0.5;
 
 const TRUCK_EASE = 1;
 
@@ -157,28 +157,29 @@ const CHASE_FOV = 50; // lens once chasing the truck (lower = tighter / more com
 // (The camera's smoothness lives in the ⭐ SMOOTHNESS ⭐ block below — one feel knob.)
 
 // ─── ⭐ THE SPEED ZONES — slow ONLY while the truck drives ⭐ ──────────────────
-// The scroll page is split into THREE parts, each with its own scroll length (in
-// screen-heights). The truck's pace = its whole road spread across DRIVE_VH, so make
-// THAT big to crawl, while the intro before it and the tail after it stay NORMAL.
+
 // These three are the only numbers you touch:
 const INTRO_VH = 100; //  BEFORE  — PAL text + camera flying in to the truck. NORMAL speed.
-const DRIVE_VH = 900; // 🐌 TRUCK DRIVING — big = very slow. Raise to crawl more, lower to speed up.
-const OUTRO_VH = 200; //  AFTER   — normal-speed scroll once the truck has parked (0 = none).
+const DRIVE_VH = 600; // 🐌 TRUCK DRIVING — big = very slow. Raise to crawl more, lower to speed up.
+const OUTRO_VH = 0; //  AFTER   — extra scroll tail after the drive ends (fog held at the whiteout) before Section 2 flows up into view as its own section. Bigger = a longer hold on the fog before the handoff.
 
 // Everything below is derived from the three numbers above — no need to touch it.
-const SCROLL_VH = INTRO_VH + DRIVE_VH + OUTRO_VH; // total scroll-page height
-const P_MOVE_END = INTRO_VH / SCROLL_VH; // PHASE 2 ends / the drive begins (camera has arrived)
-const P_DRIVE_END = (INTRO_VH + DRIVE_VH) / SCROLL_VH; // the drive ends — truck parked after this
+export const SCROLL_VH = INTRO_VH + DRIVE_VH + OUTRO_VH; // total scroll-page height
+export const P_MOVE_END = INTRO_VH / SCROLL_VH; // PHASE 2 ends / the drive begins (camera has arrived)
+export const P_DRIVE_END = (INTRO_VH + DRIVE_VH) / SCROLL_VH; // the drive ends — truck parked after this
 // Intro choreography — kept at the SAME relative timing inside the (normal-speed) intro.
 const P_TEXT_END = P_MOVE_END * 0.42; // PHASE 1 ends — hero framing held until here
-const TEXT_FADE_A = P_MOVE_END * 0.08; // overlay starts fading here
-const TEXT_FADE_B = P_MOVE_END * 0.33; // overlay fully gone here
+export const TEXT_FADE_A = P_MOVE_END * 0.08; // overlay starts fading here
+export const TEXT_FADE_B = P_MOVE_END * 0.33; // overlay fully gone here
 
 
-const SMOOTH = 4.2;
+// ──  THE FRAMER-SMOOTH KNOB  ───────────────────────────────────────────────
 
-// Same idea, but for touch devices (phones / tablets). 0 = native phone scrolling.
-const SMOOTH_TOUCH = 0.9;
+export const SMOOTH = 1.5;
+
+// Same idea, but for touch devices (phones / tablets). Phones already have great
+// native momentum, so keep this low so it feels native, not rubbery. 0 = fully native.
+export const SMOOTH_TOUCH = 0.4;
 
 // Optional EXTRA glide for the CAMERA only, layered on top of SMOOTH. Seconds.
 //   • 0   → camera is LOCKED to the smoothed scroll — SMOOTH alone owns the feel.
@@ -203,7 +204,7 @@ const BRIDGE_ROTATION: [number, number, number] = [0, 0, 0];
 const BRIDGE_SCALE = 1;
 
 // ─── Distance fog + sky (lifted from HeroModel so the look matches) ──────────
-const FOG_COLOR = "#E4E4E4";
+const FOG_COLOR = "#F0F0F0";
 const FOG_NEAR = 10;
 const FOG_FAR = 85;
 const SKY_SUN: [number, number, number] = [16, 22, 9];
@@ -212,6 +213,20 @@ const SKY_RAYLEIGH = 1.4;
 const SKY_MIE_COEFFICIENT = 0.006;
 const SKY_MIE_G = 0.85;
 
+// ─── ⭐ STAGE-3 SPEED RUSH + FOG DISSOLVE — the END of this section ⭐ ─────────
+
+const RUSH_START = 0.76; // pave where stage 3 begins → the rush starts here (0 before it)
+const RUSH_FOV = 74; // CHASE_FOV (50) punches out to this by the end — the speed feel
+const RUSH_DOLLY = 0.78; // camera eases to this × CAM_BACK (lunges ~22% closer) at full rush
+const FOG_NEAR_END = 0.5; // fog pulled this close at the very end …
+const FOG_FAR_END = 1.5; // … and this far — right on top of the camera, so the truck dissolves sooner
+// The fog closes in on its OWN ramp (earlier than the camera RUSH_START) so you can
+// actually SEE it roll over the truck before the DOM whiteout veil takes the frame.
+// THIS is the real "make the fog closer/sooner" knob — lower = fog thickens earlier
+// and from further back in the drive, so the wall is on top of you for longer.
+const FOG_RUSH_START = 0.45;
+export const WHITEOUT_A = 0.9; // pave where the DOM fog veil starts to fill in …
+export const WHITEOUT_B = 1; // … and where it is fully fog (truck gone, section ended)
 
 function CinematicRig({
   truckRef,
@@ -254,11 +269,41 @@ function CinematicRig({
     const truckX = truckXAt(pave);
     truck.position.x = truckX;
 
+    // ── Stage-3 speed rush ────────────────────────────────────────────────
+    // 0 until the truck reaches stage 3, easing up to 1 by the very end of the
+    // drive. It drives the wider lens, the forward camera lunge and the fog
+    // closing in — the "top gear" kick that ends with the truck swallowed by fog.
+    const rush = THREE.MathUtils.clamp(
+      (pave - RUSH_START) / (1 - RUSH_START),
+      0,
+      1
+    );
+    const rushE = rush * rush * (3 - 2 * rush); // smoothstep
+
+    // A dolly-in (camera eases closer) paired with the wider FOV below reads as
+    // accelerating: the world rushes past while the truck stays roughly framed.
+    const camBack = THREE.MathUtils.lerp(CAM_BACK, CAM_BACK * RUSH_DOLLY, rushE);
+
     // Chase framing for the truck's CURRENT position (local offset → world).
-    chasePos.current.set(truckX + CAM_BACK, CAM_HEIGHT, CAM_SIDE);
+    chasePos.current.set(truckX + camBack, CAM_HEIGHT, CAM_SIDE);
     scene.localToWorld(chasePos.current);
     chaseLook.current.set(truckX + LOOK_AHEAD, LOOK_HEIGHT, 0);
     scene.localToWorld(chaseLook.current);
+
+    // Fog closes in on its OWN ramp (FOG_RUSH_START, earlier than the camera rush)
+    // so the truck visibly dissolves before the DOM veil arrives. (Set on the live
+    // scene fog each frame; fogRushE = 0 outside the ramp ⇒ base values.)
+    const fogRush = THREE.MathUtils.clamp(
+      (pave - FOG_RUSH_START) / (1 - FOG_RUSH_START),
+      0,
+      1
+    );
+    const fogRushE = fogRush * fogRush * (3 - 2 * fogRush); // smoothstep
+    const fog = state.scene.fog as THREE.Fog | null;
+    if (fog) {
+      fog.near = THREE.MathUtils.lerp(FOG_NEAR, FOG_NEAR_END, fogRushE);
+      fog.far = THREE.MathUtils.lerp(FOG_FAR, FOG_FAR_END, fogRushE);
+    }
 
     if (t <= P_TEXT_END) {
       // PHASE 1 — hold the hero framing while the text fades (DOM, handled below).
@@ -273,17 +318,14 @@ function CinematicRig({
       lookGoal.current.copy(heroLook.current).lerp(chaseLook.current, e);
       fovGoal.current = THREE.MathUtils.lerp(HERO_FOV, CHASE_FOV, e);
     } else {
-      // PHASE 3 — chase the paving truck.
+      // PHASE 3 — chase the paving truck; the lens punches wide as it rushes.
       camGoal.current.copy(chasePos.current);
       lookGoal.current.copy(chaseLook.current);
-      fovGoal.current = CHASE_FOV;
+      fovGoal.current = THREE.MathUtils.lerp(CHASE_FOV, RUSH_FOV, rushE);
     }
 
     // The camera rides the SAME smoothed scroll as everything else. By default
-    // (CAM_GLIDE = 0) it snaps to its scroll-derived goal each frame, so the lone
-    // SMOOTH knob owns the camera's feel too. CAM_GLIDE > 0 adds optional extra
-    // camera-only drift. The first frame always snaps so the opening shot matches
-    // the hero framing. Frame-rate independent either way.
+
     const a =
       first.current || CAM_GLIDE <= 0 ? 1 : 1 - Math.exp(-delta / CAM_GLIDE);
     first.current = false;
@@ -296,15 +338,23 @@ function CinematicRig({
   return null;
 }
 
-export default function Animate() {
+export default function Animate({
+  overlayRef,
+  fogVeilRef,
+  progressRef,
+}: {
+  // The smooth-scroll DOM (#smooth-wrapper / #smooth-content / spacer) and Section 2
+  // are siblings of this component in page.tsx, and page.tsx creates the
+  // ScrollSmoother + master scroll timeline there (its parent effect runs AFTER all
+  // the refs are attached — which is exactly why that setup lives there, not here).
+  // page.tsx drives this fixed scene through these three refs:
+  overlayRef: React.RefObject<HTMLDivElement | null>; // hero text overlay (fades on scroll)
+  fogVeilRef: React.RefObject<HTMLDivElement | null>; // full-frame fog wash that ends the section
+  progressRef: React.RefObject<number>; // 0→1 scroll progress, read each frame by the rig
+}) {
   const root = useRef<HTMLDivElement>(null); // scopes the GSAP selectors below
-  const wrapper = useRef<HTMLDivElement>(null); // ScrollSmoother viewport
-  const content = useRef<HTMLDivElement>(null); // ScrollSmoother scrolled content
-  const scroller = useRef<HTMLDivElement>(null); // tall spacer = the scroll length
-  const overlay = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Group>(null);
   const truckRef = useRef<THREE.Group>(null);
-  const progressRef = useRef(0);
 
   useGSAP(
     () => {
@@ -358,39 +408,9 @@ export default function Animate() {
           1.0
         );
 
-      // ── Smooth scrolling (the official GSAP plugin) ─────────────────────────
-      // Eases the whole page scroll. Any ScrollTrigger created AFTER this picks
-      // up the smoothed scroll automatically, so the rig + text fade ride it too.
-      ScrollSmoother.get()?.kill(); // avoid duplicates on hot-reload / StrictMode
-      ScrollSmoother.create({
-        wrapper: wrapper.current!,
-        content: content.current!,
-        smooth: SMOOTH, // ← the knob: seconds of "catch up". Higher = more glide.
-        smoothTouch: SMOOTH_TOUCH, // smoothing on touch devices (0 = native phone scroll)
-        normalizeScroll: true, // unifies wheel/touch + tames mobile address bar
-        effects: false,
-      });
-
-      // ── The master scroll → drives the 3D rig AND the overlay fade ──────────
-      ScrollTrigger.create({
-        trigger: scroller.current!,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-          progressRef.current = p;
-
-          // PHASE 1: fade the hero text out (and lift it slightly) as we scroll.
-          const fade = THREE.MathUtils.smoothstep(p, TEXT_FADE_A, TEXT_FADE_B);
-          const el = overlay.current;
-          if (el) {
-            el.style.opacity = String(1 - fade);
-            el.style.transform = `translateY(${fade * -28}px)`;
-            el.style.pointerEvents = fade > 0.98 ? "none" : "";
-          }
-        },
-      });
+      // The page scroll (ScrollSmoother) + the master scroll timeline that drives
+      // this scene (progressRef, the overlay fade and the fog veil) are created in
+      // page.tsx — see the comment on the props above.
     },
     { scope: root }
   );
@@ -529,7 +549,7 @@ export default function Animate() {
 
         {/* ===== HERO TEXT OVERLAY (fades out in phase 1) ===== */}
         <div
-          ref={overlay}
+          ref={overlayRef}
           style={{
             position: "absolute",
             inset: 0,
@@ -539,81 +559,9 @@ export default function Animate() {
             willChange: "opacity, transform",
           }}
         >
-          {/* TOP-LEFT: burger + brand mark */}
-          <div
-            className="pal-brand"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              position: "relative",
-              zIndex: 5,
-              pointerEvents: "auto",
-            }}
-          >
-            <button
-              type="button"
-              className="pal-burger"
-              aria-label="Open menu"
-              style={{
-                display: "inline-flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: 8,
-                width: 40,
-                height: 38,
-                padding: 0,
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-              }}
-            >
-              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
-              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
-              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
-            </button>
-          </div>
-
-          {/* TOP-RIGHT: availability CTA */}
-          <div
-            className="pal-topright pal-cta"
-            style={{
-              position: "absolute",
-              top: 56,
-              right: 80,
-              display: "flex",
-              alignItems: "center",
-              gap: 18,
-              zIndex: 6,
-              pointerEvents: "auto",
-            }}
-          >
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 9,
-                fontFamily: MONO,
-                fontSize: 16,
-                letterSpacing: "0.24em",
-                textTransform: "uppercase",
-                color: "rgba(22,24,28,0.55)",
-              }}
-            >
-              <span
-                className="pal-cta-dot"
-                style={{
-                  display: "inline-block",
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  background: ACCENT,
-                  animation: "pal-cta-pulse 2.4s ease-in-out infinite",
-                }}
-              />
-              Available for new projects
-            </span>
-          </div>
+          {/* (The burger + availability CTA used to live here. They now sit in
+              the PERSISTENT TOP BAR below — outside this fading overlay and above
+              Section 2 — so they stay visible through the whole scroll.) */}
 
           {/* RIGHT EDGE: vertical services */}
           <div
@@ -783,17 +731,121 @@ export default function Animate() {
             </span>
           </div>
         </div>
-      </div>
 
-      {/* The ONLY thing that actually scrolls. ScrollSmoother fixes the wrapper to
-          the viewport and eases the content's transform; the 600vh spacer just
-          sets how long the cinematic runs. The scene above reads the smoothed
-          scroll through its ScrollTrigger. */}
-      <div ref={wrapper} id="smooth-wrapper">
-        <div ref={content} id="smooth-content">
-          <div ref={scroller} style={{ height: `${SCROLL_VH}vh` }} />
+        {/* ===== FOG VEIL — the end of this section. The stage-3 speed rush
+            dissolves the truck, and this wash finishes the whiteout across the
+            whole frame (sky included). Its opacity is driven by scroll in the
+            ScrollTrigger above; the next section can fade up out of this fog. ===== */}
+        <div
+          ref={fogVeilRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 20,
+            background: FOG_COLOR,
+            opacity: 0,
+            pointerEvents: "none",
+            willChange: "opacity",
+          }}
+        />
+
+        {/* ===== PERSISTENT TOP BAR — burger + availability CTA.
+            Pulled OUT of the hero overlay (which fades on scroll) and placed
+            ABOVE Section 2 (z 40 > 30) so it stays put through the whole
+            cinematic AND once the services panel has risen. Both sit on light
+            backgrounds the whole way, so the ink burger + CTA stay legible.
+            The container is click-through; only the burger/CTA capture pointers.
+            It still carries the .pal-brand / .pal-cta classes, so the load-in
+            intro timeline animates it exactly as before. ===== */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "56px 80px",
+            pointerEvents: "none",
+          }}
+        >
+          {/* burger + brand mark */}
+          <div
+            className="pal-brand"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              pointerEvents: "auto",
+            }}
+          >
+            <button
+              type="button"
+              className="pal-burger"
+              aria-label="Open menu"
+              style={{
+                display: "inline-flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: 8,
+                width: 40,
+                height: 38,
+                padding: 0,
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
+              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
+              <span style={{ display: "block", width: 38, height: 3, background: INK }} />
+            </button>
+          </div>
+
+          {/* availability CTA */}
+          <div
+            className="pal-topright pal-cta"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              pointerEvents: "auto",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 9,
+                fontFamily: MONO,
+                fontSize: 16,
+                letterSpacing: "0.24em",
+                textTransform: "uppercase",
+                color: "rgba(22,24,28,0.55)",
+              }}
+            >
+              <span
+                className="pal-cta-dot"
+                style={{
+                  display: "inline-block",
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: ACCENT,
+                  animation: "pal-cta-pulse 2.4s ease-in-out infinite",
+                }}
+              />
+              Available for new projects
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* The smooth-scroll DOM (#smooth-wrapper / #smooth-content), the tall scroll
+          spacer and Section 2 are all rendered by page.tsx as siblings of this
+          fixed scene. This component renders ONLY the fixed scene above. */}
     </div>
   );
 }
