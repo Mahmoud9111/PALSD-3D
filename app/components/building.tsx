@@ -14,6 +14,9 @@ are the numbers you get (no hidden scaling / distortion on desktop).
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 //  SIZE CONTROLS  —  the only knobs. Change these.
 const SECTION_HEIGHT = "100vh"; // height of the whole section ("100vh", "900px", …)
@@ -80,6 +83,7 @@ const KEYFRAMES = `
 
 export default function Building() {
   const scope = useRef<HTMLDivElement>(null); // GSAP selector scope + IO target
+  const roadRef = useRef<HTMLDivElement>(null); // ScrollTrigger target for the rail draw-in
 
   // ── Self-revealing headline — the SAME blur-in cascade as Section 2's title ──
   useEffect(() => {
@@ -117,6 +121,35 @@ export default function Building() {
       reveal.kill();
       gsap.set(chars, { clearProps: "filter,opacity,visibility,transform" });
     };
+  }, []);
+
+  // ── Rail draw-in keeps its ORIGINAL looping animation — it just STARTS when
+  // the road scrolls into view (frozen on its first frame until then). ──
+  useEffect(() => {
+    const road = roadRef.current;
+    if (!road) return;
+    const rails = road.querySelectorAll<SVGLineElement>(".bld-rail");
+    if (rails.length === 0) return;
+
+    // Reduced motion → no loop; just show the road fully drawn.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      rails.forEach((r) => {
+        r.style.animation = "none";
+        r.style.strokeDashoffset = "0";
+      });
+      return;
+    }
+
+    const st = ScrollTrigger.create({
+      trigger: road,
+      start: "top 70%", // the scroll point where the draw-in kicks off
+      once: true, // start it once, then let it loop on its own
+      onEnter: () => {
+        rails.forEach((r) => (r.style.animationPlayState = "running"));
+      },
+    });
+
+    return () => st.kill();
   }, []);
 
   return (
@@ -267,6 +300,7 @@ export default function Building() {
 
 
         <div
+          ref={roadRef}
           style={{
             position: "relative",
             flexGrow: 1, // fill the leftover height so the road reaches the section bottom (no gap)
@@ -310,7 +344,7 @@ export default function Building() {
             {RAILS.map(([bx, op, delay, sw], i) => (
               <line
                 key={i}
-                className="bld-anim"
+                className="bld-rail"
                 x1={bx}
                 y1={H}
                 x2={VP_X}
@@ -321,10 +355,12 @@ export default function Building() {
                 strokeWidth={sw}
                 vectorEffect="non-scaling-stroke"
                 strokeDasharray="1"
-                strokeDashoffset="0"
+                strokeDashoffset="1"
                 style={{
                   animation: "bld-drawIn 9s cubic-bezier(.22,1,.36,1) infinite",
                   animationDelay: `${delay}s`,
+                  // start frozen — the scroll trigger below flips this to "running"
+                  animationPlayState: "paused",
                 }}
               />
             ))}
