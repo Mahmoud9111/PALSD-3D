@@ -29,7 +29,7 @@ type GLTFResult = GLTF & {
 };
 
 // ─── Sign finish (tunable) ───────────────────────────────────────────────────
-const SIGN_COLOR = "#fff01f"; // solid white
+const SIGN_COLOR = "#346BFF"; // accent blue
 const ROUGHNESS = 0.55; // matte-ish; lower = glossier
 const METALNESS = 0.0;
 

@@ -77,7 +77,7 @@ const GRID_SQUARE_SIZE = 0.7; // world units per cell (≈ ShapeGrid squareSize)
 const GRID_BORDER_COLOR = "#C7C7C7"; // square OUTLINE colour (the grid lines)
 const GRID_FILL_COLOR = "#E4E4E4"; // square INTERIOR colour, BEFORE hover — change this
 const GRID_FILL_OPACITY = 0.71; // resting fill strength (0 = fully transparent squares)
-const GRID_HOVER_COLOR = "#979797"; // fill of the hovered cell
+const GRID_HOVER_COLOR = "#7096FE"; // fill of the hovered cell
 const GRID_LINE_WIDTH = 0.001; // border thickness in world units
 const GRID_OPACITY = 0.9; // overall line opacity (lets the ground show through)
 const GRID_HOVER_OPACITY = 0.85; // opacity of the blue hover fill

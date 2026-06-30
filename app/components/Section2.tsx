@@ -1,64 +1,39 @@
 "use client";
 
-/*
-SECTION 2 — Services panel ("WHAT WE BUILD").
-
-A standalone section in the page flow, rendered in page.tsx as a sibling right
-below the hero (<Animate />). Its background is #F0F0F0 — the exact fog colour the
-hero ends on — so as you scroll past the truck's fog whiteout, this section rises
-up out of that same field with no visible seam; one simply becomes the other.
-
-It owns only its layout, look, and its OWN reveal: the reveal is a paused GSAP
-timeline that an IntersectionObserver plays when the section scrolls into view
-(and rewinds when it leaves, so it replays on re-entry). No external scroll
-listener drives it any more — it is fully self-contained.
-
-Type: an engineering-drawing services grid — corner registration marks, a faint
-48px gridline field, a title block with a drawing reference, and six discipline
-tiles. Each tile sweeps to ink on hover (the ghost number flares orange, the
-copy inverts to paper). Everything is set in Inter; only the page title is set
-in caps.
-*/
-
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // ─── Palette (same reference design as the hero) ─────────────────────────────
 const INK = "#16181C";
-const ACCENT = "#FF4A1C";
+const ACCENT = "#346BFF";
 const BG = "#F0F0F0"; // panel background (note: no longer matches FOG_COLOR #E4E4E4 in animate.tsx)
-const PAPER = "#E4E4E4"; // the copy colour once a tile sweeps to ink
-// Card surface: now matches the panel background exactly, so each tile reads as
-// an inset card floating in the darker frame tray below — the shadow still lifts
-// it off, and the gaps between tiles show the tray's darker grey.
+
 const CARD_BG = BG;
 const CARD_BORDER = "1px solid rgba(22,24,28,.05)";
 const CARD_RADIUS = 18;
-// The services "tray": a darker grey frame the whole grid sits inside. A little
-// padding all round forms the frame; the smaller gaps between tiles show this
-// same darker colour. One step darker than BG so the BG-coloured tiles float.
+
 const FRAME_BG = "#DEDEDE";
-// A faint dashed "stroke" that outlines the section. One line colour, built into
-// two repeating gradients (V runs down the side rails, H runs along the top/bottom
-// rules) so the dash size is ours to set, not the browser's `border: dashed`.
-// Small, fine dashes: 3px on / 3px off.
+
 const GRID_LINE = "rgba(22,24,28,.18)";
 const GRID_V = `repeating-linear-gradient(to bottom, ${GRID_LINE} 0 3px, transparent 3px 6px)`;
 const GRID_H = `repeating-linear-gradient(to right, ${GRID_LINE} 0 3px, transparent 3px 6px)`;
-// Inter is the only face on this panel (registered in layout.tsx). The whole
-// subtree inherits it from the root; the small "drawing label" feel is carried
-// by caps + tracking rather than a monospace face.
+
 const INTER = "var(--font-inter), 'Helvetica Neue', Arial, sans-serif";
+
+// ───  THE REVEAL SCROLL LENGTH  ───────────────────────────────────────────
+
+const REVEAL_SCROLL = "150%";
 
 type Card = {
   n: string;
   title: ReactNode;
   desc: string;
   cat: string;
-  // the inner SVG paths; the <svg> wrapper (and its hover-driven stroke) is
-  // built in ServiceCard. Accent strokes carry their own colour so they stay
-  // orange through the hover invert.
+
   icon: ReactNode;
 };
 
@@ -190,10 +165,7 @@ const CARDS: Card[] = [
   },
 ];
 
-// A single discipline tile. Owns its own hover state so the ink sweep, the
-// orange ghost flare and the copy invert all run off one boolean. (CSS :hover
-// can't override inline styles without !important, and this file is fully
-// inline-styled — so the hover lives in state.)
+
 function ServiceCard({ card }: { card: Card }) {
   const [hover, setHover] = useState(false);
 
@@ -218,19 +190,7 @@ function ServiceCard({ card }: { card: Card }) {
         cursor: "pointer",
       }}
     >
-      {/* ink sweep — rises from the bottom edge on hover */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: INK,
-          clipPath: hover ? "inset(0 0 0 0)" : "inset(100% 0 0 0)",
-          transition: "clip-path .6s cubic-bezier(.16,1,.3,1)",
-          zIndex: 0,
-        }}
-      />
-
-      {/* oversized ghost index — flares orange as the sweep covers it */}
+      {/* oversized ghost index — turns accent blue on hover */}
       <span
         aria-hidden
         style={{
@@ -241,7 +201,7 @@ function ServiceCard({ card }: { card: Card }) {
           fontSize: 120,
           lineHeight: 1,
           letterSpacing: "-0.05em",
-          color: hover ? "rgba(255,74,28,.85)" : "rgba(22,24,28,.06)",
+          color: hover ? ACCENT : "rgba(22,24,28,.06)",
           transition: "color .5s ease",
           pointerEvents: "none",
           zIndex: 1,
@@ -266,7 +226,7 @@ function ServiceCard({ card }: { card: Card }) {
           height={54}
           viewBox="0 0 48 48"
           fill="none"
-          stroke={hover ? PAPER : INK}
+          stroke={INK}
           strokeWidth={1.4}
           strokeLinecap="square"
           strokeLinejoin="miter"
@@ -275,9 +235,6 @@ function ServiceCard({ card }: { card: Card }) {
           {card.icon}
         </svg>
 
-        {/* title — rises up from behind this mask on reveal. The padding +
-            negative margins give the glyphs room (so ascenders/descenders aren't
-            clipped at rest) without shifting the surrounding layout. */}
         <div
           style={{
             overflow: "hidden",
@@ -295,7 +252,7 @@ function ServiceCard({ card }: { card: Card }) {
               fontSize: 30,
               lineHeight: 1,
               letterSpacing: "-0.02em",
-              color: hover ? PAPER : INK,
+              color: INK,
               transition: "color .5s ease",
               willChange: "transform",
             }}
@@ -304,8 +261,6 @@ function ServiceCard({ card }: { card: Card }) {
           </h3>
         </div>
 
-        {/* description — pushed to the bottom (auto top margin), rises from behind
-            its own mask just after the title. */}
         <div
           style={{
             margin: "auto 0 -0.14em",
@@ -321,7 +276,7 @@ function ServiceCard({ card }: { card: Card }) {
               maxWidth: 230,
               fontSize: 14,
               lineHeight: 1.45,
-              color: hover ? "rgba(228,228,228,.75)" : "rgba(22,24,28,.6)",
+              color: "rgba(22,24,28,.6)",
               transition: "color .5s ease",
               willChange: "transform",
             }}
@@ -340,7 +295,7 @@ function ServiceCard({ card }: { card: Card }) {
             fontSize: 10,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: hover ? "rgba(228,228,228,.6)" : "rgba(22,24,28,.5)",
+            color: "rgba(22,24,28,.5)",
             transition: "color .5s ease",
             willChange: "transform, opacity",
           }}
@@ -355,82 +310,38 @@ function ServiceCard({ card }: { card: Card }) {
 }
 
 export default function Section2() {
-  // Section 2 is now its own normal section in the page flow (rendered in
-  // page.tsx, below the hero). The reveal is a PAUSED GSAP timeline that plays
-  // itself the moment the section scrolls into view, and rewinds when it leaves
-  // so it replays on re-entry — it no longer owns, nor is scrubbed by, any
-  // external scroll. Honours prefers-reduced-motion (no hidden states set).
+  // Section 2 PINS the page while it reveals: when its top reaches the top of the
+
+  const sectionRef = useRef<HTMLDivElement>(null); // the pinned section element
   const scope = useRef<HTMLDivElement>(null); // GSAP selector scope
+
+  // ── HEADER reveal — the NORMAL way (NOT pinned/scrubbed) ────────────────────
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const root = scope.current;
     if (!root) return;
     const q = gsap.utils.selector(scope);
+    const chars = root.querySelectorAll<HTMLElement>(".s2-title-char");
 
-    // ── hidden starting states ──
+    // ── hidden starting states (header only) ──
+    // headline glyphs — blurred, faded and lifted just above their line
+    gsap.set(chars, { filter: "blur(12px)", autoAlpha: 0, y: -40 });
     gsap.set(q(".s2-overline"), { opacity: 0, x: -20 });
     gsap.set(q(".s2-sub"), { opacity: 0, y: 24 });
     gsap.set(q(".s2-meta"), { opacity: 0, y: 16 });
-    // tile COPY hidden — the boxes themselves stay visible the whole time. The
-    // title and description sit BELOW their masks (yPercent 120); the icon and
-    // meta line start faded + dropped. (Nothing is set on .s2-card, so the boxes
-    // never animate on reveal.)
-    gsap.set(q(".s2-card-icon"), { autoAlpha: 0, y: 22 });
-    gsap.set(q(".s2-card-title"), { yPercent: 120 });
-    gsap.set(q(".s2-card-desc"), { yPercent: 120 });
-    gsap.set(q(".s2-card-meta"), { autoAlpha: 0, y: 16 });
 
-    // The supporting header copy + the six discipline tiles. The HEADLINE is NOT
-    // here — it plays its OWN one-shot reveal when it scrolls into view (see the
-    // self-revealing headline effect below), so it runs at its own pace.
-    const t = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
-    t.to(q(".s2-overline"), { opacity: 1, x: 0, duration: 0.6 })
-      // info line trails the overline by a touch more now (less overlap) so it
-      // reveals with a little extra delay behind the headline.
+    const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+    // headline leads, blurring in glyph by glyph; the rest trails it
+    tl.to(chars, { filter: "blur(0px)", autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.02 }, 0)
+      .to(q(".s2-overline"), { opacity: 1, x: 0, duration: 0.6 }, 0.2)
       .to(q(".s2-sub"), { opacity: 1, y: 0, duration: 0.7 }, "-=0.05")
       .to(q(".s2-meta"), { opacity: 1, y: 0, duration: 0.7 }, "-=0.55");
 
-    // ── the tile COPY develops (the boxes themselves never animate) ──
-    // Only the copy reveals, and slowly: the icon fades up, then the title and
-    // then the description each RISE out from behind their own mask, then the
-    // meta line settles. Every layer staggers diagonally across the 2×3 grid
-    // (from the top-left), so the whole field unfolds line-by-line — no blunt
-    // box-wipe. Wider per-tile stagger = a slower, more deliberate wave across
-    // the grid (each tile gets its own moment, not the whole field popping at once).
-    const CARD_STAGGER = {
-      each: 0.16,
-      grid: [2, 3] as [number, number],
-      from: "start" as const,
-    };
-    t.add("cards", "-=0.1")
-      .to(
-        q(".s2-card-icon"),
-        { autoAlpha: 1, y: 0, duration: 1.1, ease: "power2.out", stagger: CARD_STAGGER },
-        "cards"
-      )
-      .to(
-        q(".s2-card-title"),
-        { yPercent: 0, duration: 1.4, ease: "power2.out", stagger: CARD_STAGGER },
-        "cards+=0.22"
-      )
-      .to(
-        q(".s2-card-desc"),
-        { yPercent: 0, duration: 1.4, ease: "power2.out", stagger: CARD_STAGGER },
-        "cards+=0.44"
-      )
-      .to(
-        q(".s2-card-meta"),
-        { autoAlpha: 1, y: 0, duration: 1.1, ease: "power2.out", stagger: CARD_STAGGER },
-        "cards+=0.66"
-      );
-
-    // Play the reveal once the section scrolls into view; rewind when it leaves
-    // so it replays each time you come back to it.
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) t.play();
-        else t.pause(0);
+        if (entry.isIntersecting) tl.play();
+        else tl.pause(0); // out of view → rewind so it replays on re-entry
       },
       { threshold: 0.2 }
     );
@@ -438,62 +349,83 @@ export default function Section2() {
 
     return () => {
       io.disconnect();
-      t.kill();
-      gsap.set(
-        q(
-          ".s2-overline, .s2-sub, .s2-meta, .s2-card-icon, .s2-card-title, .s2-card-desc, .s2-card-meta"
-        ),
-        { clearProps: "all" }
-      );
+      tl.kill();
+      gsap.set([...chars, ...q(".s2-overline, .s2-sub, .s2-meta")], {
+        clearProps: "all",
+      });
     };
   }, []);
 
-  // ── Self-revealing headline (Framer-style "text reveal", but GSAP) ──────────
-  // Runs independently of the reveal timeline above: the headline plays its OWN
-  // one-shot blur-in the moment it scrolls into view, at its own pace. An
-  // IntersectionObserver arms it; when the headline leaves the viewport the
-  // timeline rewinds, so it replays each time the section scrolls back into view.
-  // Honours prefers-reduced-motion: with it on, nothing is hidden and the
-  // headline just renders normally.
+  // ── SERVICE CARDS reveal — PINNED + scrubbed by the scroll ──────────────────
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const root = scope.current;
-    if (!root) return;
-    const titleEl = root.querySelector(".s2-title");
-    const chars = root.querySelectorAll<HTMLElement>(".s2-title-char");
-    if (!titleEl || chars.length === 0) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const q = gsap.utils.selector(scope);
 
-    // hidden start — each glyph blurred, faded and lifted just above its line
-    gsap.set(chars, { filter: "blur(12px)", autoAlpha: 0, y: -40 });
-    const reveal = gsap.timeline({ paused: true });
-    reveal.to(chars, {
-      filter: "blur(0px)",
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.8, // per-letter reveal length
-      ease: "power3.out",
-      stagger: 0.02, // 20ms between letters — the cascade delay
-      delay: 0.4, // hold a beat after it scrolls into view before the cascade starts
+    // ── hidden starting states (tile COPY only) ──
+
+    gsap.set(q(".s2-card-icon"), { autoAlpha: 0, y: 22 });
+    gsap.set(q(".s2-card-title"), { yPercent: 120 });
+    gsap.set(q(".s2-card-desc"), { yPercent: 120 });
+    gsap.set(q(".s2-card-meta"), { autoAlpha: 0, y: 16 });
+
+
+    const CARD_STAGGER = {
+      each: 0.16,
+      grid: [2, 3] as [number, number],
+      from: "start" as const,
+    };
+
+    const tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      scrollTrigger: {
+        trigger: section,
+        start: "top top",
+        end: `+=${REVEAL_SCROLL}`,
+        pin: true,
+        pinType: "transform", // section sits inside ScrollSmoother's transformed content
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
     });
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) reveal.play();
-        else reveal.pause(0); // out of view → rewind so it replays on re-entry
-      },
-      { threshold: 0.5 } // fire once the headline is comfortably (50%) in view
-    );
-    io.observe(titleEl);
+
+    tl.add("cards")
+      .to(
+        q(".s2-card-icon"),
+        { autoAlpha: 1, y: 0, duration: 1.1, stagger: CARD_STAGGER },
+        "cards"
+      )
+      .to(
+        q(".s2-card-title"),
+        { yPercent: 0, duration: 1.4, stagger: CARD_STAGGER },
+        "cards+=0.22"
+      )
+      .to(
+        q(".s2-card-desc"),
+        { yPercent: 0, duration: 1.4, stagger: CARD_STAGGER },
+        "cards+=0.44"
+      )
+      .to(
+        q(".s2-card-meta"),
+        { autoAlpha: 1, y: 0, duration: 1.1, stagger: CARD_STAGGER },
+        "cards+=0.66"
+      );
 
     return () => {
-      io.disconnect();
-      reveal.kill();
-      gsap.set(chars, { clearProps: "filter,opacity,visibility,transform" });
+      tl.scrollTrigger?.kill();
+      tl.kill();
+      gsap.set(q(".s2-card-icon, .s2-card-title, .s2-card-desc, .s2-card-meta"), {
+        clearProps: "all",
+      });
     };
   }, []);
 
   return (
     <div
+      ref={sectionRef}
       aria-label="What we build"
       style={{
         position: "relative", // its own section in the page flow, below the hero
@@ -501,27 +433,21 @@ export default function Section2() {
         minHeight: "100vh",
         background: BG,
         color: INK,
-        // page.tsx's smooth-scroll wrapper is click-through (pointerEvents:none)
-        // so it never eats hover over the fixed scene; re-enable it here so this
-        // section's cards/links stay interactive.
+
         pointerEvents: "auto",
         overflow: "hidden",
         fontFamily: INTER, // Inter for the whole panel
       }}
     >
-      {/* ── SECTION FRAME ──
-          Dashed "stroke" framing the section: the two horizontal rules run full
-          bleed, fitted to the page edges; the two vertical rails sit in a centred
-          track so they hug close to the cards. They cross at the corners.
-          Decorative: click-through, pinned BEHIND the content (scope = zIndex 1). */}
+      {/* ── SECTION FRAME ── */}
       <div
         aria-hidden
         style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}
       >
         {/* horizontal rules — full bleed, fitted to the page edges */}
-        <div style={{ position: "absolute", left: 0, right: 0, top: 96, height: 1, background: GRID_H }} />
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 1, background: GRID_H }} />
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 32, height: 1, background: GRID_H }} />
-        {/* vertical rails — in the centred content track, close to the cards */}
+        {/* vertical rails — start at the very top of the section */}
         <div
           style={{
             position: "absolute",
@@ -529,7 +455,7 @@ export default function Section2() {
             bottom: 0,
             left: 0,
             right: 0,
-            maxWidth: 2000,
+            maxWidth: 1800,
             margin: "0 auto",
           }}
         >
@@ -543,30 +469,22 @@ export default function Section2() {
         style={{
           position: "relative",
           zIndex: 1, // content sits above the blueprint grid
-          // 100vh (not 100%) so this flex column has a real, resolved height:
-          // its parent (#smooth-content) is auto-height, so a percentage min-height
-          // collapses to nothing and the frame below can't flex-grow — that's what
-          // left the dead space under the cards. With a viewport height the frame
-          // (flex:1) absorbs the leftover and the 1fr card rows stretch to fill it.
+
           minHeight: "100vh",
           // cap the content width and centre it so the page reads narrower
           width: "100%",
-          maxWidth: 2000,
+          maxWidth: 1800,
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          // extra top padding clears the persistent top bar (burger + CTA) that
-          // floats above this panel — see the PERSISTENT TOP BAR in animate.tsx
-          padding: "132px 64px 56px",
+
+          padding: "56px 64px 56px",
           boxSizing: "border-box",
           overflow: "hidden",
         }}
       >
-        {/* ── HEADER ──
-            Restyled to the "case study" type: a numbered overline with a red
-            registration tick, a big mixed-case headline, and a quiet corner link
-            on the right — airy, no heavy rule. */}
+        {/* ── HEADER ── */}
         <div
           style={{
             position: "relative",
@@ -598,12 +516,7 @@ export default function Section2() {
               <span style={{ color: INK }}>Services</span>
               <span style={{ marginLeft: 4 }}>2026</span>
             </div>
-            {/* headline — revealed letter-by-letter with a blur-in (filter
-                blur 10→0, fade, and a drop from above), 20ms apart. Each glyph is
-                its own inline-block span so the GSAP reveal can stagger across
-                them; words are wrapped in a nowrap span so they never break
-                mid-word. overflow:visible (paddings/margins still cancel to keep
-                layout unchanged) so the lifted, blurred glyphs aren't clipped. */}
+            {/* headline — */}
             <div
               style={{
                 overflow: "visible",
@@ -632,6 +545,7 @@ export default function Section2() {
                         className="s2-title-char"
                         style={{
                           display: "inline-block",
+                          color: word.startsWith("build") ? ACCENT : INK,
                           willChange: "transform, filter, opacity",
                         }}
                       >
@@ -658,38 +572,10 @@ export default function Section2() {
             </p>
           </div>
 
-          {/* corner link, echoing "Full case study ↗" */}
-          <span
-            className="s2-meta"
-            style={{
-              flexShrink: 0,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              marginTop: 8,
-              fontSize: 14,
-              fontWeight: 500,
-              color: INK,
-              borderBottom: `1px solid ${INK}`,
-              paddingBottom: 4,
-              cursor: "pointer",
-            }}
-          >
-            All services
-            <span aria-hidden style={{ color: INK }}>
-              ↗
-            </span>
-          </span>
+
         </div>
 
-        {/* ── SERVICES FRAME + GRID ──
-            The frame is a darker "tray" the whole grid sits inside: a little
-            padding all round forms the frame, and the tightened gaps between
-            tiles show this same darker colour. It flex-grows to absorb the
-            panel's leftover height so the cards fill the page — no dead space on
-            tall screens. The inner grid stretches to fill the frame; the 1fr rows
-            stretch the cards and minHeight on the card keeps them honest on short
-            screens (the panel scrolls instead). */}
+        {/* ── SERVICES FRAME + GRID ── */}
         <div
           style={{
             position: "relative",

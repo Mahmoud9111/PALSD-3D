@@ -17,7 +17,10 @@ import Animate, {
   WHITEOUT_B,
 } from "./components/animate";
 import WhyUs from "./components/whyus";
+import Building from "./components/building";
 import Section2 from "./components/Section2";
+import ProjectsGrid from "./components/projectsGrid";
+import Reviews from "./components/reviews";
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -111,8 +114,15 @@ export default function Home() {
         <div ref={content} id="smooth-content">
           {/* tall spacer = how long the cinematic runs */}
           <div ref={scroller} style={{ height: `${SCROLL_VH}vh` }} />
-          <WhyUs />
+          <Building />
           <Section2 />
+          <ProjectsGrid />
+          <Reviews />
+
+
+
+                    <WhyUs />
+
         </div>
       </div>
     </>

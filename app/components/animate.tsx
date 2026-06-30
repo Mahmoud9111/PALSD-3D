@@ -2,7 +2,7 @@
 
 /*
 Cinematic scroll sequence — a single scrubbed timeline, played by scrolling:
-
+grid
   PHASE 1  (progress 0 … TEXT_END)   Hero framing + PAL text overlay, held still.
                                      The text fades out across this phase.
   PHASE 2  (TEXT_END … MOVE_END)     The camera flies from the hero framing to the
@@ -34,7 +34,7 @@ import { Bridge } from "./Bridge";
 // ─── Palette (from the PAL reference design) ─────────────────────────────────
 const INK = "#16181C";
 const PAPER = "#E9E8E3";
-const ACCENT = "#FF4A1C";
+const ACCENT = "#346BFF";
 const MONO = "ui-monospace, monospace";
 
 // ─── Shared scene transform (street + truck + signs + bridge all ride this) ──
@@ -224,7 +224,7 @@ const FOG_FAR_END = 1.5; // … and this far — right on top of the camera, so 
 // actually SEE it roll over the truck before the DOM whiteout veil takes the frame.
 // THIS is the real "make the fog closer/sooner" knob — lower = fog thickens earlier
 // and from further back in the drive, so the wall is on top of you for longer.
-const FOG_RUSH_START = 0.45;
+const FOG_RUSH_START = 0.8;
 export const WHITEOUT_A = 0.9; // pave where the DOM fog veil starts to fill in …
 export const WHITEOUT_B = 1; // … and where it is fully fog (truck gone, section ended)
 

@@ -23,6 +23,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const INK = "#16181C";
+const ACCENT = "#346BFF"; // the small accent tick in the section label
 const MUTED = "rgba(22,24,28,0.22)"; // the un-inked (light grey) word colour
 const BG = "#F0F0F0"; // matches the fog whiteout + Section 2 — no seam
 // Same dashed "stroke" frame as Section 2: one line colour built into two
@@ -109,7 +110,7 @@ export default function WhyUs() {
             as Section 2. They START at the cross point with the top rule (top:96) since
             this is the START of the grid, and run to bottom:0 so they flow continuously
             down into Section 2's rails. */}
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0, maxWidth: 2000, margin: "0 auto" }}>
+        <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0, maxWidth: 1800, margin: "0 auto" }}>
           <div style={{ position: "absolute", top: 96, bottom: 0, left: 48, width: 1, background: GRID_V }} />
           <div style={{ position: "absolute", top: 96, bottom: 0, right: 48, width: 1, background: GRID_V }} />
         </div>
@@ -120,7 +121,7 @@ export default function WhyUs() {
           position: "relative",
           zIndex: 1,
           width: "100%",
-          maxWidth: 2000,
+          maxWidth: 1800,
           margin: "0 auto",
           padding: "0 64px",
           boxSizing: "border-box",
@@ -128,22 +129,22 @@ export default function WhyUs() {
         }}
       >
         {/* pill badge */}
-        <span
+        <div
           style={{
-            display: "inline-block",
-            padding: "8px 18px",
-            borderRadius: 999,
-            border: "1px solid rgba(22,24,28,.18)",
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 12,
+            fontSize: 13,
+            letterSpacing: "0.01em",
             color: "rgba(22,24,28,.55)",
             marginBottom: 40,
           }}
         >
-          / 002 / Why us
-        </span>
+          <span style={{ color: INK, fontWeight: 600 }}>02</span>
+          <span style={{ display: "inline-block", width: 2, height: 14, background: ACCENT }} />
+          <span style={{ color: INK }}>Why us</span>
+          <span style={{ marginLeft: 4 }}>2026</span>
+        </div>
 
         {/* the scroll-filled headline */}
         <h2

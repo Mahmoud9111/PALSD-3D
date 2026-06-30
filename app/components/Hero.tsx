@@ -8,7 +8,7 @@ import HeroModel from "./HeroModel";
 // Palette lifted from the PAL reference design.
 const INK = "#16181C";
 const PAPER = "#E9E8E3";
-const ACCENT = "#FF4A1C";
+const ACCENT = "#346BFF";
 const MONO = "ui-monospace, monospace";
 
 export default function Hero() {

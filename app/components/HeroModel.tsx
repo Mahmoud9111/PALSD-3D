@@ -15,7 +15,7 @@ import { Sign } from "./Sign";
 import { Bridge } from "./Bridge";
 
 // ─── Model transform (move / turn / resize the whole scene) ──────────────────
-const MODEL_POSITION: [number, number, number] = [7, 0, 0]; // slide the model [x, y, z]
+const MODEL_POSITION: [number, number, number] = [7, 0, 0]; //grid slide the model [x, y, z]
 const MODEL_ROTATION: [number, number, number] = [0.0, -0.3, 0]; // turn the model in radians [x, y, z]
 const MODEL_SCALE = 1; // overall size multiplier
 
