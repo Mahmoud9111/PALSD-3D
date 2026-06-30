@@ -288,7 +288,7 @@ function ReviewCard({ review }: { review: Review }) {
                 fontWeight: 600,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "rgba(22,24,28,.5)",
+                color: "#2563eb",
               }}
             >
               {review.role}

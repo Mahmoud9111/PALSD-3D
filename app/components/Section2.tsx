@@ -263,7 +263,7 @@ function ServiceCard({ card }: { card: Card }) {
 
         <div
           style={{
-            margin: "auto 0 -0.14em",
+            margin: "16px 0 -0.14em",
             overflow: "hidden",
             paddingTop: "0.14em",
             paddingBottom: "0.14em",
@@ -273,8 +273,8 @@ function ServiceCard({ card }: { card: Card }) {
             className="s2-card-desc"
             style={{
               margin: 0,
-              maxWidth: 230,
-              fontSize: 14,
+              maxWidth: 300,
+              fontSize: 16,
               lineHeight: 1.45,
               color: "rgba(22,24,28,.6)",
               transition: "color .5s ease",
@@ -288,7 +288,7 @@ function ServiceCard({ card }: { card: Card }) {
         <div
           className="s2-card-meta"
           style={{
-            marginTop: 20,
+            marginTop: "auto",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -300,7 +300,7 @@ function ServiceCard({ card }: { card: Card }) {
             willChange: "transform, opacity",
           }}
         >
-          <span>{card.cat}</span>
+          <span style={{ color: ACCENT }}>{card.cat}</span>
           {/* arrow keeps its own orange through the invert */}
           <span style={{ color: ACCENT }}>→</span>
         </div>
